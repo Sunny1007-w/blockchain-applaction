@@ -1,122 +1,42 @@
-# blockchain-applaction
-Ballot.sol
-pragma solidity ^0.5.0;
+**基于区块链的投票方案**
+     本方案是基于区块链的投票方案，旨在创建一个公平可靠的决策方式。该方案解决了传统的投票方式成本高，效率低，失误多等众多缺点。本方案满足电子投票基本的要求，对投票者的隐私保密性做到最大化的保护，同时还具备自我计票功能，可以取代第三方计票机构，并且在区块链技术的支持下具备投票结果公开可验证、防篡改等特性。
 
-contract Ballot {
+?     使用Solidity语言编程实现了由一个合约文件组成的投票方案的智能合约。该合约控制整个投票过程，有创建提案，添加投票人，给予投票人投票权，投票，结束投票，开始投票，查看主席地址 ，查看主席名称，查看最终结果，查看提案 ，查看投票状态，查看总票数，查看总投票人，查看个人投票情况方法。如图为系统构架：
 
-    struct vote{
-        address voterAddress;
-        bool choice;
-    }
-    
-    struct voter{
-        string voterName;
-        bool voted;
-    }
+![image-20210105222246045](https://i.loli.net/2021/01/05/9epLvaj37FcVU4C.png)
 
-    uint private countResult = 0;
-    uint public finalResult = 0;
-    uint public totalVoter = 0;
-    uint public totalVote = 0;
-    address public ballotOfficialAddress;      
-    string public ballotOfficialName;
-    string public proposal;
-    
-    mapping(uint => vote) private votes;
-    mapping(address => voter) public voterRegister;
-    
-    enum State { Created, Voting, Ended }
-	State public state;
-	
-	//creates a new ballot contract
-	constructor(
-        string memory _ballotOfficialName,
-        string memory _proposal) public {
-        ballotOfficialAddress = msg.sender;
-        ballotOfficialName = _ballotOfficialName;
-        proposal = _proposal;
-        
-        state = State.Created;
-    }
-    
-    
-	modifier condition(bool _condition) {
-		require(_condition);
-		_;
-	}
+如图为投票步骤交互：
 
-	modifier onlyOfficial() {
-		require(msg.sender ==ballotOfficialAddress);
-		_;
-	}
+1.创建投票:
 
-	modifier inState(State _state) {
-		require(state == _state);
-		_;
-	}
+![image-20210105222826271](https://i.loli.net/2021/01/05/Iw4PFxg7nCrf2G8.png)
 
-    event voterAdded(address voter);
-    event voteStarted();
-    event voteEnded(uint finalResult);
-    event voteDone(address voter);
-    
-    //add voter
-    function addVoter(address _voterAddress, string memory _voterName)
-        public
-        inState(State.Created)
-        onlyOfficial
-    {
-        voter memory v;
-        v.voterName = _voterName;
-        v.voted = false;
-        voterRegister[_voterAddress] = v;
-        totalVoter++;
-        emit voterAdded(_voterAddress);
-    }
+2.投票:
 
-    //declare voting starts now
-    function startVote()
-        public
-        inState(State.Created)
-        onlyOfficial
-    {
-        state = State.Voting;     
-        emit voteStarted();
-    }
+![image-20210105222908183](https://i.loli.net/2021/01/05/dHkzQfRTcxN6p2L.png)
 
-    //voters vote by indicating their choice (true/false)
-    function doVote(bool _choice)
-        public
-        inState(State.Voting)
-        returns (bool voted)
-    {
-        bool found = false;
-        
-        if (bytes(voterRegister[msg.sender].voterName).length != 0 
-        && !voterRegister[msg.sender].voted){
-            voterRegister[msg.sender].voted = true;
-            vote memory v;
-            v.voterAddress = msg.sender;
-            v.choice = _choice;
-            if (_choice){
-                countResult++; //counting on the go
-            }
-            votes[totalVote] = v;
-            totalVote++;
-            found = true;
-        }
-        emit voteDone(msg.sender);
-        return found;
-    }
-    
-    //end votes
-    function endVote()
-        public
-        inState(State.Voting)
-        onlyOfficial
-    {
-        state = State.Ended;
-        finalResult = countResult; //move result from private countResult to public finalResult
-        emit voteEnded(finalResult);
-    }
-}
+3.审计：
+
+![image-20210105222934322](https://i.loli.net/2021/01/05/56HpsUmhyz9PKrj.png)
+
+**智能合约的开发**
+
+开发语言：solidity
+
+编辑器：  Visual Studio Code
+
+在线编辑器：Remix
+
+交易桥梁： Matemask
+
+环境配置:
+
+| 类别       | 标准配置                            | 最低配置                            |
+| ---------- | ----------------------------------- | ----------------------------------- |
+| 计算机硬件 | Cpu，网卡，显卡，硬盘               | Cpu，网卡，显卡，硬盘               |
+| 软件       | Remix，visual studio code,matamask, | Remix，visual studio code,matamask, |
+| 其它       | Solidoty,node.js,                   | Solidoty,node.js,                   |
+
+用ETH.Build 演示过程：
+
+![image-20210105223505964](https://i.loli.net/2021/01/05/DHKTqjoFP7zwfLS.png)
